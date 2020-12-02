@@ -24,7 +24,7 @@ Data preparation is needed before the data can be used for model training. Here 
 
 The data preparation process is provided as **clean_data** function in train.py script.
 
-Overall, the best performing model is model trained using Automated ML (AutoML) with VotingEnsemble as the best ML algorithm. The model accuracy is slighty higher *(Accuracy )*, compare to model trained using HyperDrive parameter tuning *(Accuracy )*.
+Overall, the best performing model is model trained using Automated ML (AutoML) with VotingEnsemble (combine multiple ML model such as LightGBM, XGBoostClassifier) as the best ML algorithm. The model accuracy is slighty higher *(Accuracy ~ 0.91505)*, compare to model trained using HyperDrive parameter tuning *(Accuracy ~ 0.90966)*.
 
 ## Scikit-learn Pipeline
 Model trained using HyperDrive tuning use SKLearn estimator to runs training script (train.py) to train classification model (logistic regression). The training script accepts 2 arguments, Regulaization penalty (--C) and max interation (--max-iter). The training script (train.py) contains data preparation function (clean_data). The trained model is saved for each experiment run.
@@ -35,10 +35,10 @@ Other important setting in HyperDrive parameter tuning includes:-
 - For early termination policy, **BanditPolicy** is used to terminates runs where the primary metric (accuracy) is not within the specified slack factor (0.2) compared to the best performing run.
 
 ## AutoML
-AutoML used different set of ML algorithm and hyperparameter tuning to perform model training for each run. The hyperparameter is set automatically based on the ML algorithm being used. The final model VotingEnsemble is generated that combines multiple fitted model. AutoML support automated feature engineering (eg. scaling, normalization, feature selection) which remove lot of manual work that is error prone and redundant.
+AutoML used different set of ML algorithm (LightGBM, XGBoostClassifier, RandomForest etc) and hyperparameter tuning to perform model training for each run. The hyperparameter is set automatically based on the ML algorithm being used. The final model VotingEnsemble is generated that combines multiple fitted model. AutoML support automated feature engineering (eg. scaling, normalization, feature selection) which remove lot of manual work that is error prone and redundant.
 
 ## Pipeline comparison
-Based on the primary metric accuracy, AutoML *(Accuracy )* perform much better compare to model trained using Hyperdrive hyperparameter tuning *(Accuracy )*. This  could due to to AutoML ability to use different type of model algorithm for training and generate the final ensemble model *VotingEnsemble* which leverage all this models. Model trained using Hyperdrive only use 1 ML algorithm as define inside train.py script.
+Based on the primary metric accuracy, AutoML *(Accuracy ~ 0.91505)* perform much better compare to model trained using Hyperdrive hyperparameter tuning *(Accuracy ~ 0.90966)*. This  could due to to AutoML ability to use different type of model algorithm for training and generate the final ensemble model *VotingEnsemble* which combine all this fitted models. Model trained using Hyperdrive only use 1 ML algorithm (scikit-learn LogisticRegression) as define inside train.py script. AutoML automatically generate and optimize hyperparameter for each ML algorithm during training run, while HyperDrive requires range of hyperparameter values to be defined manually before performing hyperparameter sampling.
 
 Cross validation also implemented as part of AutoML to prevent model overfitting.
 
