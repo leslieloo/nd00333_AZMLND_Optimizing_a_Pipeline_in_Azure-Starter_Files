@@ -6,24 +6,45 @@ In this project, we build and optimize an Azure ML pipeline using the Python SDK
 This model is then compared to an Azure AutoML run.
 
 ## Summary
-This dataset contains data about UCI Bank marketing. We seek to predict if client will subscribe to a term deposit with the bank.
+The dataset used contains data from UCI Bank marketing campaign. We seek to predict if client will subscribe to a term deposit with the bank (indicated as 'yes' in column y). 
 
-The best performing model is model trained using Automated ML with VotingEnsemble as the best ML algorithm. The model accuracy is slighty higher, compare to model trained using HyperDrive parameter tuning.
+Some of the columns used in the prediction includes (Full columns description/metadata can be found [here](https://archive.ics.uci.edu/ml/datasets/Bank+Marketing)):
+
+- **marital** : marital status (categorical: 'divorced','married','single','unknown'; note: 'divorced' means divorced or widowed)
+- **default**: has credit in default? (categorical: 'no','yes','unknown')
+- **housing**: has housing loan? (categorical: 'no','yes','unknown')
+- **loan**: has personal loan? (categorical: 'no','yes','unknown')
+- **contact**: contact communication type (categorical: 'cellular','telephone')
+
+Data preparation is needed before the data can be used for model training. Here are some of the data transformation apply on the columns:-
+- **marital** - encoded to 1 when value is 'married' or 0 otherwise
+- **default** - encoded to 1 when value is 'yes' or 0 otherwise
+- **month** - encoded to numeric value from abbreviation (eg. jan as 1)
+- **contact** - one-hot encoded to create new column for each category
+
+The data preparation process is provided as **clean_data** function in train.py script.
+
+Overall, the best performing model is model trained using Automated ML (AutoML) with VotingEnsemble as the best ML algorithm. The model accuracy is slighty higher *(Accuracy )*, compare to model trained using HyperDrive parameter tuning *(Accuracy )*.
 
 ## Scikit-learn Pipeline
-Model trained using HyperDrive tuning use SKLearn estimator wrapper to runs training script (train.py) to train classification model (logistic regression). The training script accepts 2 arguments, Regulaization penalty (--C) and max interation (--max-iter). The training script (train.py) used scikit-learn LogisticRegression to perform classification.
+Model trained using HyperDrive tuning use SKLearn estimator to runs training script (train.py) to train classification model (logistic regression). The training script accepts 2 arguments, Regulaization penalty (--C) and max interation (--max-iter). The training script (train.py) contains data preparation function (clean_data). The trained model is saved for each experiment run.
 
-RandomParameterSampling is used to randomly choose hyperparameter value for training, which reduce training time, with performance/accuracy that can match with GridParameterSampling that will perform all combination of hyperparameter setting given
+Other important setting in HyperDrive parameter tuning includes:-
+- **RandomParameterSampling** is selected as the parameter sampling method to randomly sample over range of values define in hyperparameter search space. This method greatly reduce the amount of time searching for optimal hyperparameter value, compare with other sampling methods.
 
-BanditPolicy is used as the early stopping policy to terminate training process when there is no further improvement compare to the previous run.
+- For early termination policy, **BanditPolicy** is used to terminates runs where the primary metric (accuracy) is not within the specified slack factor (0.2) compared to the best performing run.
 
 ## AutoML
-AutoML used different set of ML algorithm and hyperparameter tuning to perform training. The hyperparameter is set automatically based on the ML algorithm being used to run training.
+AutoML used different set of ML algorithm and hyperparameter tuning to perform model training for each run. The hyperparameter is set automatically based on the ML algorithm being used. The final model VotingEnsemble is generated that combines multiple fitted model. AutoML support automated feature engineering (eg. scaling, normalization, feature selection) which remove lot of manual work that is error prone and redundant.
 
 ## Pipeline comparison
-AutoML perform much better compare to model trained using Hyperdrive hyperparameter tuning. This could due to to AutoML ability to use different type of model algorithm to train with hyperparameter tuning, while Hyperdrive only use 1 ML algorithm to perform hyperparameter  tuning.
+Based on the primary metric accuracy, AutoML *(Accuracy )* perform much better compare to model trained using Hyperdrive hyperparameter tuning *(Accuracy )*. This  could due to to AutoML ability to use different type of model algorithm for training and generate the final ensemble model *VotingEnsemble* which leverage all this models. Model trained using Hyperdrive only use 1 ML algorithm as define inside train.py script.
+
+Cross validation also implemented as part of AutoML to prevent model overfitting.
 
 ## Future work
-AutoML do support classification task with deep learning algorithm. This may further improve the model accuracy. 
+AutoML do support generating stack ensemble model. This model combines the previous fitted models and trains a meta-model based on this individual models. This may further improve the model performance/accuracy.  
+
+On the other hand, model train using HyperDrive can be further improved by using different advanced classification ensemble algorithm (eg. XGBoost or Random Forest). Other suggested optimization include using Bayesian parameter samplng method to intelligently pick the next sample of hyperparameters, based on how the previous samples performed, such that the new sample improves the reported primary metric
 
 
